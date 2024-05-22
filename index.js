@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser')
 const mongoose = require('mongoose')
 const googleAuth = require('./src/Controller/GoogleAuth/googleAuth.js')
 const MongoStore = require('connect-mongo')
-const postTweet = require('./src/Controller/postController.js')
+const postController = require('./src/Controller/postController.js')
 
 
 const { OAuth2Client, auth } = require('google-auth-library')
@@ -44,13 +44,15 @@ const userController = require('./src/Controller/userController.js')
 app.use(session({
    name: 'connect-session',
    secret: 'very-long-secret-auth-secret',
-   cookie: { maxAge: 7000 * 1000 },
+   cookie: { maxAge: 30 * 60 * 1000 },
    saveUninitialized: false,
-   resave:true,
+   resave:false,
    store: new MongoStore({
       mongoUrl: 'mongodb+srv://serkan:serkan123@cluster0.ewau8v3.mongodb.net/twitterclone?retryWrites=true&w=majority',
       collectionName: 'sessions',
-      ttl: 7000
+      ttl: 7000,
+      autoRemove:'interval',
+      autoRemoveInterval:1
    })
 }))
 
@@ -71,7 +73,9 @@ app.route('/api/v1/islogged')
    .get(authController.protect,authController.haslogged)
 
 app.route('/api/v1/posttweet')
-   .post(postTweet.postTweet)
+   .post(postController.postTweet)
+app.route('/api/v1/getpostdata')
+   .get(postController.getPostData)
 
 
 
