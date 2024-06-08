@@ -9,24 +9,21 @@ const googleAuth = require('./src/Controller/GoogleAuth/googleAuth.js')
 const MongoStore = require('connect-mongo')
 const postController = require('./src/Controller/postController.js')
 
-
-const { OAuth2Client, auth } = require('google-auth-library')
-
+const DB = process.env.DATABASE.replace(
+   '<PASSWORD>',
+   process.env.DATABASE_PASSWORD
+)
 
 const app = express()
 app.use(cookieParser())
-app.use(express.json())
+app.use(express.json({limit: '500mb'}))
+app.use(express.urlencoded({limit:'500mb', extended:true}))
 app.use(cors({
    origin: 'http://localhost:3000',
    credentials: true
 }))
 
 
-
-const DB = process.env.DATABASE.replace(
-   '<PASSWORD>',
-   process.env.DATABASE_PASSWORD
-)
 mongoose.connect(DB)
 .then(con =>{
    console.log('baglandi');
@@ -35,8 +32,6 @@ mongoose.connect(DB)
    if(err) console.log(err, 'veritabanı baglanti hatasi');
 })
 
-
-
 const authController = require('./src/Controller/authController.js')
 const userController = require('./src/Controller/userController.js')
 
@@ -44,7 +39,7 @@ const userController = require('./src/Controller/userController.js')
 app.use(session({
    name: 'connect-session',
    secret: 'very-long-secret-auth-secret',
-   cookie: { maxAge: 30 * 60 * 1000 },
+   cookie: { maxAge: 60 * 60 * 1000 },
    saveUninitialized: false,
    resave:false,
    store: new MongoStore({
@@ -71,14 +66,23 @@ app.route('/api/v1/registeruser')
    .post(userController.registerUser)
 app.route('/api/v1/islogged')
    .get(authController.protect,authController.haslogged)
+app.route('/api/v1/logout')
+   .get(googleAuth.logout)
 
 app.route('/api/v1/posttweet')
    .post(postController.postTweet)
 app.route('/api/v1/getpostdata')
    .get(postController.getPostData)
-
-
-
+app.route('/api/v1/replypost')
+   .post(postController.replyPost)
+app.route('/api/v1/getcomments')
+   .get(postController.getComments)
+app.route('/api/v1/unlikepost')
+   .delete(postController.removeLike)
+app.route('/api/v1/likepost')
+   .post(postController.likePost)
+app.route('/api/v1/likecomment')
+   .post(postController.likeComment)
 
 app.listen(4000,()=>{
    console.log('app calisti');

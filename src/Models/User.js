@@ -30,9 +30,18 @@ const userSchema = mongoose.Schema({
          message: 'passwords are not the same'
       }
    },
-   locale: String,
-   phoneNumber: String,
-   birthDate: String
+   locale:{
+      type:String,
+      default:"tr"
+   },
+   phoneNumber: {
+      type:String,
+      default:'notset'
+   },
+   birthDate: {
+      type:String,
+      default:'notset'
+   }
 })
 
 

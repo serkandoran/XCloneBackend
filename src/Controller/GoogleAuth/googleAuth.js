@@ -64,23 +64,44 @@ exports.clearUserData = (req,res)=>{
 
 exports.googleAuthLast = async(req,res)=>{
    // /api/v1/auth/payload
-   if(userData){
+   if(userData){ // user google ile ilk kez giriş yapıyor.
       let user = await User.findOne({email: userData.email})
-      if(user && !req.session.userId){
+
+      if(user && !req.session.userId){ // user kayıtlı ama sessionu bitmiş
          req.session.userId = user._id
          return res.status(200).json({data: userData, isUser: true})
+      }else if(!user){
+         let user = await User.create({
+            name: userData.name,
+            email: userData.email,
+            picture: userData.picture,
+         })
+         req.session.userId = user._id
+         res.status(200).json({data:user, isUser:false})
       }
-   }
-
-   if(userData){
-      return res.status(200).json({
-         data: userData,
-         isUser: false
-      })
-   }else return res.status(403).json({})
+   } else return res.status(403).json({msg:'hatalı giriş'})
+   // if(userData){
+   //    return res.status(200).json({
+   //       data: userData,
+   //       isUser: false
+   //    })
+   // }else return res.status(403).json({})
 }
 
-
+exports.logout = async (req, res) => {
+   req.session.destroy(err => {
+      if (err) {
+         return res.status(500).json({
+            msg: 'logout failed'
+         })
+      }
+      res.clearCookie('connect-session')
+      userData = undefined
+      res.status(200).json({
+         msg: 'logout success'
+      })
+   })
+}
 
 
 

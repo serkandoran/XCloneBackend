@@ -16,6 +16,18 @@ const contentAr_inner_Schema = new Schema({
    },
    _id: false
 })
+const comment_inner_contentAr = new Schema({
+   mtype: {
+      type: String,
+      enum: ['image', 'question', 'video', 'gif'],
+      required: true
+   },
+   mdata: {
+      type: Schema.Types.Mixed,
+      required: true
+   },
+   _id: false
+})
 
 
 const mainAr_inner_Schema = new Schema({
@@ -25,8 +37,24 @@ const mainAr_inner_Schema = new Schema({
    contentAr: [contentAr_inner_Schema],
    _id: false
 })
-
-
+const comment_inner = new Schema({
+   commentString:{
+      type:String
+   },
+   commentContentAr: [comment_inner_contentAr],
+   _id:false
+})
+const likedElement = new Schema({
+   likedId: {
+      type: Schema.Types.ObjectId,
+      required:true
+   },
+   likedElementIdx: {
+      type: Number,
+      default: 0,
+   },
+   _id:false
+})
 const postSchema = mongoose.Schema({
    creatorId: {
       type: Schema.Types.ObjectId,
@@ -37,22 +65,38 @@ const postSchema = mongoose.Schema({
       enum:['draft','post']
    },
    postDetail: [mainAr_inner_Schema],
-   likeCount: {
-      type: Number,
-      default: 0
-   },
-   viewCount: {
-      type: Number,
-      default: 0
-   },
-   repostCount: {
-      type: Number,
-      default: 0
-   },
-   replyCount: {
-      type: Number,
-      default: 0
-   }
+   comments:[
+      {
+         commentorId:{
+            type: Schema.Types.ObjectId,
+            required:true
+         },
+         commentDetail:[comment_inner],
+         commentLikeCount:[
+            {
+               type:Schema.Types.ObjectId,
+               _id:false
+            },
+         ]
+      }
+   ],
+   likeCount: [likedElement],
+   viewCount:[
+      {
+         likedPersonId: Schema.Types.ObjectId,
+         _id: false
+      }
+   ],
+   repostCount:[
+      {
+         type: Schema.Types.ObjectId,
+      }
+   ],
+   replyCount:[
+      {
+         type: Schema.Types.ObjectId,
+      }
+   ],
 })
 
 const Posts = mongoose.model('posts', postSchema)
